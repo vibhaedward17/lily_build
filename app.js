@@ -93,19 +93,37 @@
      r: 1.5 + Math.random(),
      ph: Math.random() * 6.28
    }));
+      let wind = 0;
+   let windTarget = 0;
+   const outCanvas = document.getElementById('out');
 
-      function frame(t) {
+   outCanvas.addEventListener('pointermove', e => {
+     const r = outCanvas.getBoundingClientRect();
+     windTarget = ((e.clientX - r.left) / r.width - 0.5) * 2;
+   });
+   outCanvas.addEventListener('pointerleave', () => {
+     windTarget = 0;
+   });
+
+   function flowerX(f, t) {
+     const k = (490 - f.y) / 350;
+     return f.x + Math.sin(t / 700 + f.ph) * 8 + wind * 30 * k;
+   }
+
+         function frame(t) {
+     wind += (windTarget - wind) * 0.06;
+
      ctx.fillStyle = '#000';
      ctx.fillRect(0, 0, 400, 500);
+
      STARS.forEach(s => {
-     ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t / 500 + s.ph);
-     ctx.fillStyle = '#fff';
-     ctx.beginPath();
-     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-     ctx.fill();
-   });
-   ctx.globalAlpha = 1;
-     
+       ctx.globalAlpha = 0.6 + 0.4 * Math.sin(t / 500 + s.ph);
+       ctx.fillStyle = '#fff';
+       ctx.beginPath();
+       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+       ctx.fill();
+     });
+     ctx.globalAlpha = 1;
 
      LEAF_ANGLES.forEach(a => leaf(a, 170));
 
@@ -114,8 +132,7 @@
      ctx.strokeStyle = '#2d8a28';
 
      FLOWERS.forEach(f => {
-       const sway = Math.sin(t / 700 + f.ph) * 8;
-       const fx = f.x + sway;
+       const fx = flowerX(f, t);
        ctx.beginPath();
        ctx.moveTo(200, 490);
        ctx.quadraticCurveTo(200 + (fx - 200) * 0.2, (490 + f.y) / 2, fx, f.y);
@@ -123,8 +140,7 @@
      });
 
      FLOWERS.forEach(f => {
-       const sway = Math.sin(t / 700 + f.ph) * 8;
-       lily(f.x + sway, f.y, f.size, f.base, f.tip);
+       lily(flowerX(f, t), f.y, f.size, f.base, f.tip);
      });
 
      toAscii();
